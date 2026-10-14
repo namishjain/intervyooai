@@ -1,9 +1,10 @@
 require("dotenv").config()
 const app = require("../backend/src/app")
 const connectToDB = require("../backend/src/config/database")
-const invokeGeminiAi = require("./src/services/ai.service")
+const {resume, jobDescription, selfDescription} = require('./src/services/temp')
+const generateInterviewReport = require('./src/services/ai.service')
 connectToDB()
-invokeGeminiAi()
+generateInterviewReport({resume, selfDescription, jobDescription})
 app.listen(3000, ()=>{
     console.log("Server is running on port 3000")
 })
