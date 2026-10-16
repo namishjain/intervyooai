@@ -1,6 +1,74 @@
-const { GoogleGenAI } = require("@google/genai")
+const { GoogleGenAI, Type } = require("@google/genai")
 const {z} = require("zod")
 const {zodToJsonSchema} = require("zod-to-json-schema")
+
+const geminiReportSchema = {
+    type: Type.OBJECT,
+    properties: {
+        matchScore: { type: Type.NUMBER },
+        technicalQuestions: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    question: { type: Type.STRING },
+                    intention: { type: Type.STRING },
+                    answer: { type: Type.STRING }
+                },
+                required: ["question", "intention", "answer"]
+            }
+        },
+        behavioralQuestions: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    question: { type: Type.STRING },
+                    intention: { type: Type.STRING },
+                    answer: { type: Type.STRING }
+                },
+                required: ["question", "intention", "answer"]
+            }
+        },
+        skillGaps: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    skill: { type: Type.STRING },
+                    severity: {
+                        type: Type.STRING,
+                        enum: ["low", "medium", "high"]
+                    }
+                },
+                required: ["skill", "severity"]
+            }
+        },
+        preparationPlan: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    day: { type: Type.NUMBER },
+                    focus: { type: Type.STRING },
+                    tasks: {
+                        type: Type.ARRAY,
+                        items: { type: Type.STRING }
+                    }
+                },
+                required: ["day", "focus", "tasks"]
+            }
+        }
+    },
+    required: [
+        "matchScore",
+        "technicalQuestions",
+        "behavioralQuestions",
+        "skillGaps",
+        "preparationPlan"
+    ]
+}
+
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
@@ -36,21 +104,35 @@ const interviewReportSchema = z.object({
 async function generateInterviewReport({resume, selfDescription, jobDescription}){
 
     const prompt = `
-        Generate an interview report for a candidate with the following details: 
-        Resume: ${resume}
-        Self Description: ${selfDescription}
-        Job Description: ${jobDescription}
-    `
+        Generate an interview report using the candidate details below.
+
+        Resume:
+        ${resume}
+
+        Self-description:
+        ${selfDescription}
+
+        Job description:
+        ${jobDescription}
+
+        Return:
+        - A match score from 0 to 100 as matchScore
+        - At least 5 technical questions as technicalQuestions
+        - At least 5 behavioral questions as behavioralQuestions
+        - Skill gaps as skillGaps
+        - A 7-day preparation plan. Each day must include a focus and a list of specific tasks as preparationPlan
+        `
 
     const response = await ai.models.generateContent({
         model: "gemini-3.5-flash-lite",
         contents: prompt,
         config:{
             responseMimeType: "application/json",
-            responseJsonSchema: zodToJsonSchema(interviewReportSchema)
+            responseSchema: geminiReportSchema
         }
     })
-    console.log(JSON.parse(response.text))
+    console.log(response.text)
+    return interviewReportSchema.parse(JSON.parse(response.text))
 }
 
 module.exports = generateInterviewReport
