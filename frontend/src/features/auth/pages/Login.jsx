@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router'
 import "../auth.form.scss"
 import { useAuth } from '../hooks/useAuth'
-import { useNavigate } from 'react-router'
 const Login = () => {
 
     const {loading, handleLogin} = useAuth()
@@ -17,32 +16,46 @@ const Login = () => {
     }
 
     if(loading){
-        return (<main><h1>Loading.....</h1></main>)
+        return (
+            <main className="auth-page">
+                <div className="auth-loading" role="status">Signing you in<span>...</span></div>
+            </main>
+        )
     }
 
   return (
-    <main>
-        <div className="form-container">
-            <h1>Login</h1>
+    <main className="auth-page">
+        <div className="auth-card">
+            <Link className="auth-brand" to="/">
+                <span className="auth-brand-mark" aria-hidden="true">i</span>
+                <span>intervyoo<span className="auth-brand-dot">.</span></span>
+            </Link>
 
-            <form onSubmit={handleSubmit}>
+            <div className="auth-heading">
+                <p className="auth-eyebrow">WELCOME BACK</p>
+                <h1>Good to see you.</h1>
+                <p>Sign in to pick up where your preparation left off.</p>
+            </div>
+
+            <form className="auth-form" onSubmit={handleSubmit}>
 
                 <div className="input-group">
                     <label htmlFor="email">Email</label>
-                    <input type="email" name="email" id="email" placeholder='Enter email address' onChange={(e)=>{setEmail(e.target.value)}}/>
+                    <input type="email" name="email" id="email" autoComplete="email" placeholder='you@example.com' onChange={(e)=>{setEmail(e.target.value)}}/>
                 </div>
 
                 <div className="input-group">
                     <label htmlFor="password">Password</label>
-                    <input type="password" name="password" id="password" placeholder='Enter password' onChange={(e)=>setPassword(e.target.value)}/>
+                    <input type="password" name="password" id="password" autoComplete="current-password" placeholder='Enter your password' onChange={(e)=>setPassword(e.target.value)}/>
                 </div>
 
-                <button className='button primary-button'>Login</button>
+                <button className='button primary-button' type="submit">Sign in <span aria-hidden="true">↗</span></button>
 
             </form>
 
-            <p>Don't have an account? <Link to={"/register"}>Register</Link></p>
+            <p className="auth-switch">New to intervyoo? <Link to={"/register"}>Create an account</Link></p>
         </div>
+        <p className="auth-footer">A little preparation goes a long way.</p>
     </main>
   )
 }

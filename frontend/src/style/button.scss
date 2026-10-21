@@ -3,17 +3,24 @@
     outline: none;
     padding-inline: 1.5rem;
     padding-block: 0.75rem;
-    border-radius: 1rem;
+    border-radius: 0.7rem;
+    font-size: 0.83rem;
+    font-weight: 650;
 
-    transition: all 0.3s ease-in-out;
+    transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 
     &.primary-button{
-        background-color: #e1034d;
+        background-color: var(--accent);
         cursor: pointer;
         color: white;
+
+        &:hover {
+            background-color: var(--accent-hover);
+            box-shadow: 0 8px 24px rgb(240 68 99 / 20%);
+        }
     }
 
     &:active{
-        transform: scale(0.9);
+        transform: scale(0.98);
     }
 }
