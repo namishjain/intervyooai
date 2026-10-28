@@ -8,11 +8,17 @@ const Login = () => {
     const navigate = useNavigate()
     const [email,setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [error, setError] = useState("")
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        handleLogin({email,password})
-        navigate('/')
+        setError("")
+        try {
+            await handleLogin({email,password})
+            navigate("/")
+        } catch (err) {
+            setError(err.response?.data?.message || "Unable to sign in. Please try again.")
+        }
     }
 
     if(loading){
@@ -38,6 +44,8 @@ const Login = () => {
             </div>
 
             <form className="auth-form" onSubmit={handleSubmit}>
+
+                {error && <p role="alert">{error}</p>}
 
                 <div className="input-group">
                     <label htmlFor="email">Email</label>
