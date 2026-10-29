@@ -1,55 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import '../style/interview.scss'
-
-const demoReport = {
-  matchScore: 88,
-  technicalQuestions: [
-    {
-      question: 'Can you explain how JWT-based authentication works in a Node.js and Express application?',
-      intention: 'Checks your understanding of secure authentication implementation.',
-      answer: 'JWT is a stateless authentication mechanism. After validating credentials, the server creates a signed token that the client sends with subsequent requests. Middleware verifies the signature and reads the user payload to authorize access.',
-    },
-    {
-      question: 'What is the difference between SQL and NoSQL databases, and why choose MongoDB?',
-      intention: 'Assesses database selection criteria and core database knowledge.',
-      answer: 'SQL databases are relational and use structured schemas, while NoSQL databases like MongoDB store flexible documents. MongoDB can be a good fit when application data maps naturally to JSON documents and the schema evolves during development.',
-    },
-  ],
-  behavioralQuestions: [
-    {
-      question: 'Tell me about a time when you had to learn a new technology quickly for a project.',
-      intention: 'Evaluates adaptability and your approach to continuous learning.',
-      answer: 'When I needed to add computer vision to a project, I set aside focused time to study the documentation and build a small prototype. That helped me learn the core concepts quickly and integrate the feature into the dashboard.',
-    },
-    {
-      question: 'Describe a situation where you faced a difficult bug. How did you resolve it?',
-      intention: 'Assesses analytical thinking, debugging, and perseverance.',
-      answer: 'I isolated the issue by writing tests around the pricing logic, then traced the state changes in the browser. This helped me find an edge case in the team-size calculation and fix it with confidence.',
-    },
-  ],
-  skillGaps: [
-    { skill: 'Enterprise Cloud Platforms (AWS/GCP/Azure)', severity: 'medium' },
-    { skill: 'Advanced Testing Frameworks (Jest/Mocha)', severity: 'low' },
-  ],
-  preparationPlan: [
-    {
-      day: 1,
-      focus: 'Advanced React and state management',
-      tasks: ['Review React hooks and context.', 'Build a custom hook for API calls.', 'Practice component performance optimization.'],
-    },
-    {
-      day: 2,
-      focus: 'Node.js, Express, and REST APIs',
-      tasks: ['Review middleware and routing.', 'Design REST endpoints with suitable status codes.', 'Practice error-handling patterns.'],
-    },
-    {
-      day: 3,
-      focus: 'Databases and MongoDB',
-      tasks: ['Review schema design and validation.', 'Practice aggregation pipelines.', 'Learn indexing strategies.'],
-    },
-  ],
-}
+import { useInterview } from '../hooks/useInterview'
+import {useParams} from 'react-router'
 
 const sections = [
   { id: 'technical', label: 'Technical', icon: '⌘' },
@@ -57,8 +10,28 @@ const sections = [
   { id: 'roadmap', label: 'Roadmap', icon: '↗' },
 ]
 
-const Interview = ({ report = demoReport }) => {
+const Interview = () => {
+  const {loading, report, reportError} = useInterview()
+  const {interviewId} = useParams()
+
   const [activeSection, setActiveSection] = useState('technical')
+  if (!report || String(report._id) !== interviewId) {
+    if (reportError) {
+      return (
+        <main className="interview-page">
+          <p role="alert">{reportError}</p>
+          <Link to="/">Back to workspace</Link>
+        </main>
+      )
+    }
+
+    return (
+      <main className="interview-page" aria-live="polite">
+        <p>{loading ? 'Loading your interview report...' : 'Preparing your interview report...'}</p>
+      </main>
+    )
+  }
+
   const questions = activeSection === 'technical'
     ? report.technicalQuestions
     : report.behavioralQuestions

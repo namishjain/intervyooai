@@ -5,6 +5,7 @@ const {zodToJsonSchema} = require("zod-to-json-schema")
 const geminiReportSchema = {
     type: Type.OBJECT,
     properties: {
+        title: { type: Type.STRING },
         matchScore: { type: Type.NUMBER },
         technicalQuestions: {
             type: Type.ARRAY,
@@ -61,6 +62,7 @@ const geminiReportSchema = {
         }
     },
     required: [
+        "title",
         "matchScore",
         "technicalQuestions",
         "behavioralQuestions",
@@ -122,6 +124,7 @@ async function generateInterviewReport({resume, selfDescription, jobDescription}
         - At least 5 behavioral questions as behavioralQuestions
         - Skill gaps as skillGaps
         - A 7-day preparation plan. Each day must include a focus and a list of specific tasks as preparationPlan
+        - The job title as title. If the description does not state a title explicitly, infer a concise title from the role.
         `
 
     const response = await ai.models.generateContent({

@@ -1,7 +1,38 @@
 import { Link } from 'react-router'
 import "../style/home.scss"
+import { useInterview } from '../hooks/useInterview'
+import {useState, useRef} from 'react'
+import { useNavigate } from 'react-router'
 
 const Home = () => {
+
+  const {loading, generateReport, reports, reportsError} = useInterview()
+  const [jobDescription, setJobDescription] = useState("")
+  const [selfDescription, setSelfDescription] = useState("")
+  const [error, setError] = useState("")
+  const resumeInputRef = useRef()
+
+  const navigate = useNavigate()
+
+  const handleGenerateReport = async () => {
+    const resumeFile = resumeInputRef.current.files[0]
+    setError("")
+    try {
+      const data = await generateReport({jobDescription, selfDescription, resumeFile})
+      navigate(`/interview/${data._id}`)
+    } catch (err) {
+      setError(err.response?.data?.message || "Unable to generate your report. Please try again.")
+    }
+  }
+
+  if(loading) {
+    return (
+      <main className='loading-screen'>
+        <h1>Loading...</h1>
+      </main>
+    )
+  }
+
   return (
     <main className="home-page">
       <header className="home-header">
@@ -36,6 +67,7 @@ const Home = () => {
             </div>
             <label className="field-label" htmlFor="jobDescription">Job description</label>
             <textarea
+              onChange={(e)=>{setJobDescription(e.target.value)}}
               name="jobDescription"
               id="jobDescription"
               placeholder="Paste the job description here..."
@@ -61,7 +93,7 @@ const Home = () => {
                 <span className="upload-title">Upload your resume</span>
                 <span className="upload-hint">PDF format · optional</span>
               </label>
-              <input hidden type="file" name="resume" id="resume" accept=".pdf" />
+              <input ref={resumeInputRef} hidden type="file" name="resume" id="resume" accept=".pdf" />
             </section>
 
             <section className="form-card about-card" aria-labelledby="about-title">
@@ -74,11 +106,13 @@ const Home = () => {
               </div>
               <label className="field-label" htmlFor="selfDescription">Your introduction</label>
               <textarea
+                onChange={(e)=>{setSelfDescription(e.target.value)}}
                 name="selfDescription"
                 id="selfDescription"
                 placeholder="Share your strengths, experience, and what makes you a great fit..."
               />
-              <button type="button" className="button primary-button">
+              {error && <p role="alert">{error}</p>}
+              <button type="button" className="button primary-button" onClick={handleGenerateReport}>
                 Generate my report
                 <span aria-hidden="true">↗</span>
               </button>
@@ -86,6 +120,39 @@ const Home = () => {
           </div>
         </div>
         <p className="privacy-note"><span aria-hidden="true">✦</span> Your information is only used to prepare your interview report.</p>
+
+        <section className="reports-section" aria-labelledby="reports-title">
+          <div className="reports-heading">
+            <div>
+              <p className="eyebrow"><span>02</span> YOUR WORKSPACE</p>
+              <h2 id="reports-title">Your interview reports</h2>
+            </div>
+            <span className="reports-count">{reports.length} {reports.length === 1 ? 'REPORT' : 'REPORTS'}</span>
+          </div>
+
+          {reportsError ? (
+            <p className="reports-message" role="alert">{reportsError}</p>
+          ) : reports.length > 0 ? (
+            <ul className="report-list">
+              {reports.map((report) => (
+                <li className="report-list-item" key={report._id}>
+                  <div className="report-summary">
+                    <h3>{report.title || 'Interview report'}</h3>
+                    <p>
+                      {report.createdAt ? new Date(report.createdAt).toLocaleDateString() : 'Date unavailable'}
+                      {report.matchScore != null && ` · ${report.matchScore}% job match`}
+                    </p>
+                  </div>
+                  <Link className="report-link" to={`/interview/${report._id}`}>
+                    View report <span aria-hidden="true">↗</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="reports-message">Your generated reports will appear here.</p>
+          )}
+        </section>
       </section>
     </main>
   )
