@@ -3,13 +3,17 @@ import "../style/home.scss"
 import { useInterview } from '../hooks/useInterview'
 import {useState, useRef} from 'react'
 import { useNavigate } from 'react-router'
+import { useAuth } from '../../auth/hooks/useAuth'
 
 const Home = () => {
 
   const {loading, generateReport, reports, reportsError} = useInterview()
+  const {handleLogout} = useAuth()
   const [jobDescription, setJobDescription] = useState("")
   const [selfDescription, setSelfDescription] = useState("")
   const [error, setError] = useState("")
+  const [logoutError, setLogoutError] = useState("")
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const resumeInputRef = useRef()
 
   const navigate = useNavigate()
@@ -22,6 +26,19 @@ const Home = () => {
       navigate(`/interview/${data._id}`)
     } catch (err) {
       setError(err.response?.data?.message || "Unable to generate your report. Please try again.")
+    }
+  }
+
+  const handleSignOut = async () => {
+    setLogoutError("")
+    setIsLoggingOut(true)
+    try {
+      await handleLogout()
+      navigate("/login", {replace: true})
+    } catch (err) {
+      setLogoutError(err.response?.data?.message || "Unable to sign out. Please try again.")
+    } finally {
+      setIsLoggingOut(false)
     }
   }
 
@@ -40,11 +57,26 @@ const Home = () => {
           <span className="brand-mark" aria-hidden="true">i</span>
           <span>intervyoo<span className="brand-dot">.</span></span>
         </Link>
-        <div className="header-note">
-          <span className="status-dot" aria-hidden="true" />
-          AI-powered interview prep
+        <div className="home-header-actions">
+          <div className="header-note">
+            <span className="status-dot" aria-hidden="true" />
+            AI-powered interview prep
+          </div>
+          <button
+            type="button"
+            className="logout-button"
+            onClick={handleSignOut}
+            disabled={isLoggingOut}
+            aria-label={isLoggingOut ? "Signing out" : "Sign out"}
+            title="Sign out"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M10 17l5-5-5-5m5 5H3m9-9h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5" />
+            </svg>
+          </button>
         </div>
       </header>
+      {logoutError && <p className="logout-error" role="alert">{logoutError}</p>}
 
       <section className="home-content" aria-labelledby="home-title">
         <div className="home-intro">

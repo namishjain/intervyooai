@@ -1,9 +1,9 @@
-import {getAllInterviewReports, generateInterviewReport, getInterviewReportById} from "../services/interview.api"
+import {getAllInterviewReports, generateInterviewReport, getInterviewReportById, isValidInterviewId} from "../services/interview.api"
 import { useCallback, useContext, useEffect } from "react"
 import { InterviewContext } from "../interview-context"
 import { useParams } from "react-router"
 
-export const useInterview = () => {
+export const useInterview = ({loadReports = true} = {}) => {
     const context = useContext(InterviewContext)
     const {interviewId} = useParams()
     if(!context){
@@ -56,11 +56,13 @@ export const useInterview = () => {
 
     useEffect(()=>{
         if(interviewId){
-            getReportById(interviewId)
-        } else {
+            if(isValidInterviewId(interviewId)){
+                getReportById(interviewId)
+            }
+        } else if(loadReports) {
             getReports()
         }
-    }, [interviewId, getReportById, getReports])
+    }, [interviewId, loadReports, getReportById, getReports])
 
     return {loading, report, reportError, reports, reportsError, generateReport, getReportById, getReports}
 }

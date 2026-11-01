@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import '../style/interview.scss'
 import { useInterview } from '../hooks/useInterview'
 import {useParams} from 'react-router'
+import { isValidInterviewId } from '../services/interview.api'
 
 const sections = [
   { id: 'technical', label: 'Technical', icon: '⌘' },
@@ -11,11 +12,25 @@ const sections = [
 ]
 
 const Interview = () => {
-  const {loading, report, reportError} = useInterview()
+  const {loading, report, reportError} = useInterview({loadReports: false})
   const {interviewId} = useParams()
 
   const [activeSection, setActiveSection] = useState('technical')
-  if (!report || String(report._id) !== interviewId) {
+
+  if (!interviewId || !isValidInterviewId(interviewId)) {
+    const message = interviewId
+      ? 'This interview report link is invalid.'
+      : 'No interview report ID was provided.'
+
+    return (
+      <main className="interview-page">
+        <p role="alert">{message}</p>
+        <Link to="/">Back to workspace</Link>
+      </main>
+    )
+  }
+
+  if (!report || String(report._id).toLowerCase() !== interviewId.toLowerCase()) {
     if (reportError) {
       return (
         <main className="interview-page">

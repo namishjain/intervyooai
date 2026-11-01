@@ -17,17 +17,8 @@ export const useAuth = ()=>{
         }
     }
     const handleLogout = async ()=>{
-        setLoading(true)
-        try{
-            await logout()
-            setUser(null)
-
-        } catch(err) {
-            console.log(err)
-        } finally{
-
-            setLoading(false)
-        }
+        await logout()
+        setUser(null)
     }
 
     return {user,loading,handleGoogleLogin,handleLogout}

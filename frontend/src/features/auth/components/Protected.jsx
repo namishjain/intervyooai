@@ -8,8 +8,7 @@ const Protected = ({children}) => {
     } 
 
     if(!user){
-        console.log("User is here")
-        return <Navigate to={'/login'}/>
+        return <Navigate to="/login" replace />
     }
     return children
 }

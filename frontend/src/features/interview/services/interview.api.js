@@ -5,6 +5,9 @@ const api = axios.create({
     withCredentials:true,
 })
 
+export const isValidInterviewId = (interviewId) =>
+    typeof interviewId === "string" && /^[a-f\d]{24}$/i.test(interviewId)
+
 
 export const generateInterviewReport = async ({jobDescription, selfDescription, resumeFile}) => {
     const formData = new FormData()
