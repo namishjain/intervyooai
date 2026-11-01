@@ -1,6 +1,7 @@
 const { GoogleGenAI, Type } = require("@google/genai")
 const {z} = require("zod")
 const {zodToJsonSchema} = require("zod-to-json-schema")
+const puppeteer = require("puppeteer")
 
 const geminiReportSchema = {
     type: Type.OBJECT,
@@ -139,4 +140,48 @@ async function generateInterviewReport({resume, selfDescription, jobDescription}
     return interviewReportSchema.parse(JSON.parse(response.text))
 }
 
-module.exports = generateInterviewReport
+async function generatePdfFromHtml(htmlContent){
+    const browser = await puppeteer.launch({
+        executablePath: "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+        headless: true
+    });
+    
+    const page = await browser.newPage()
+    await page.setContent(htmlContent, {waitUntil:"networkidle0"})
+
+    const pdfBuffer = await page.pdf({format: "A4"})
+    
+    await browser.close()
+
+    return pdfBuffer
+}
+
+async function generateResumePdf({resume, selfDescription, jobDescription}) {
+    const resumepdfSchema = z.object({
+        html: z.string().describe("The HTML content of the resume which can be converted to pdf using any library")
+    })
+
+    const prompt = `
+        Generate resume for a candidate with the following details:
+        Resume: ${resume}
+        Self Description: ${selfDescription}
+        Job Description: ${jobDescription}
+
+        the response should be a JSON object with a single field "html" which contains the HTML content of the resume which can be converted to pdf using ay library like puppeteer
+    `
+    const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+        config:{
+            responseMimeType: "application/json",
+            responseSchema: zodToJsonSchema(resumepdfSchema),
+        }
+    })
+    
+    const jsonContent = JSON.parse(response.text)
+
+    const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
+    return pdfBuffer
+}
+
+module.exports = {generateInterviewReport, generateResumePdf}

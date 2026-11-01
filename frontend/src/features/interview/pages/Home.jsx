@@ -124,7 +124,6 @@ const Home = () => {
         <section className="reports-section" aria-labelledby="reports-title">
           <div className="reports-heading">
             <div>
-              <p className="eyebrow"><span>02</span> YOUR WORKSPACE</p>
               <h2 id="reports-title">Your interview reports</h2>
             </div>
             <span className="reports-count">{reports.length} {reports.length === 1 ? 'REPORT' : 'REPORTS'}</span>

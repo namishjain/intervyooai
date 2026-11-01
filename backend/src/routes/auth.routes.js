@@ -5,19 +5,11 @@ const authMiddleware = require("../middlewares/auth.middleware")
 const authRouter = Router()
 
 /**
- * @route POST /api/auth/register
- * @description Register a new user
+ * @route POST /api/auth/google
+ * @description Verify a Google ID token and create or sign in a user
  * @access Public
- * 
  */
-authRouter.post("/register", authController.registerUserController)
-
-/**
- * @route POST /api/auth/login
- * @description login user with email and password
- * @access Public 
- */
-authRouter.post("/login", authController.loginUserController)
+authRouter.post("/google", authController.googleLoginController)
 
 /**
  * @route GET /api/auth/logout

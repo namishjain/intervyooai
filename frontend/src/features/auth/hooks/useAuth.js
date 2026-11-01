@@ -1,32 +1,18 @@
 import { useContext } from "react";
 import { AuthContext } from "../auth-context";
-import {login,register,logout} from "../services/auth.api"
+import {googleLogin,logout} from "../services/auth.api"
 
 export const useAuth = ()=>{
     const context = useContext(AuthContext)
     const {user, setUser, loading, setLoading} = context
 
-    const handleLogin = async ({email,password}) => {
+    const handleGoogleLogin = async (credential) => {
         setLoading(true)
         try{
-            const data = await login({email,password})
+            const data = await googleLogin(credential)
             setUser(data.user)
             return data
         } finally{
-            setLoading(false)
-        }
-
-    }
-
-    const handleRegister = async ({username,email,password}) => {
-        setLoading(true)
-        try{
-
-            const data = await register({username,email,password})
-            setUser(data.user)
-            return data
-        } finally{
-
             setLoading(false)
         }
     }
@@ -44,5 +30,5 @@ export const useAuth = ()=>{
         }
     }
 
-    return {user,loading,handleRegister,handleLogin,handleLogout}
+    return {user,loading,handleGoogleLogin,handleLogout}
 }
