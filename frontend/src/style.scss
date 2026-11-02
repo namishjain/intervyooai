@@ -42,6 +42,32 @@ body {
     min-height: 100vh;
 }
 
+@keyframes loading-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes loading-pulse {
+    50% {
+        opacity: 0.55;
+    }
+}
+
+@keyframes loading-dots {
+    0%, 20% {
+        opacity: 0.25;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.25;
+    }
+}
+
 button,
 input,
 textarea {
@@ -56,4 +82,48 @@ a:focus-visible {
 
 .highlight{
     color: var(--accent);
+}
+
+#root > main:has(> h1):not(.home-page):not(.interview-page) {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    color: var(--muted);
+
+    &::before {
+        width: 22px;
+        height: 22px;
+        flex: 0 0 auto;
+        border: 2px solid var(--line-strong);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        content: "";
+        animation: loading-spin 0.8s linear infinite;
+    }
+
+    h1 {
+        margin: 0;
+        color: var(--heading);
+        font-size: 1rem;
+        animation: loading-pulse 1.4s ease-in-out infinite;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+    }
+
+    .auth-loading::before,
+    .loading-screen::before,
+    .interview-page[aria-live="polite"] > p:not([role="alert"])::before,
+    #root > main:has(> h1):not(.home-page):not(.interview-page)::before {
+        animation: loading-spin 1.2s linear infinite !important;
+    }
 }

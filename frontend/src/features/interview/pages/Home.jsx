@@ -14,12 +14,18 @@ const Home = () => {
   const [error, setError] = useState("")
   const [logoutError, setLogoutError] = useState("")
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [resumeFileName, setResumeFileName] = useState("")
   const resumeInputRef = useRef()
 
   const navigate = useNavigate()
 
   const handleGenerateReport = async () => {
-    const resumeFile = resumeInputRef.current.files[0]
+    const resumeFile = resumeInputRef.current?.files?.[0]
+    if (!jobDescription.trim() || !selfDescription.trim() || !resumeFile) {
+      setError("Please complete all required fields before generating your report.")
+      return
+    }
+
     setError("")
     try {
       const data = await generateReport({jobDescription, selfDescription, resumeFile})
@@ -102,7 +108,7 @@ const Home = () => {
               onChange={(e)=>{setJobDescription(e.target.value)}}
               name="jobDescription"
               id="jobDescription"
-              placeholder="Paste the job description here..."
+              placeholder="Paste the job description here..." required
             />
             <p className="field-hint">Include the responsibilities and qualifications for the best results.</p>
           </section>
@@ -123,9 +129,20 @@ const Home = () => {
                   </svg>
                 </span>
                 <span className="upload-title">Upload your resume</span>
-                <span className="upload-hint">PDF format · optional</span>
+                <span className="upload-hint" title={resumeFileName || undefined}>
+                  {resumeFileName || "PDF format"}
+                </span>
               </label>
-              <input ref={resumeInputRef} hidden type="file" name="resume" id="resume" accept=".pdf" />
+              <input
+                ref={resumeInputRef}
+                hidden
+                type="file"
+                name="resume"
+                id="resume"
+                accept=".pdf"
+                onChange={(event) => setResumeFileName(event.target.files[0]?.name || "")}
+                required
+              />
             </section>
 
             <section className="form-card about-card" aria-labelledby="about-title">
@@ -142,9 +159,15 @@ const Home = () => {
                 name="selfDescription"
                 id="selfDescription"
                 placeholder="Share your strengths, experience, and what makes you a great fit..."
+                required
               />
               {error && <p role="alert">{error}</p>}
-              <button type="button" className="button primary-button" onClick={handleGenerateReport}>
+              <button
+                type="button"
+                className="button primary-button"
+                onClick={handleGenerateReport}
+                disabled={!jobDescription.trim() || !selfDescription.trim() || !resumeFileName}
+              >
                 Generate my report
                 <span aria-hidden="true">↗</span>
               </button>
