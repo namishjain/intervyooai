@@ -4,6 +4,12 @@
   color: var(--heading);
 }
 
+.interview-error {
+  margin: clamp(3rem, 12vh, 7rem) auto 1rem;
+  color: #ff8e8e;
+  text-align: center;
+}
+
 .interview-page[aria-live="polite"] > p:not([role="alert"]) {
   width: fit-content;
   display: flex;

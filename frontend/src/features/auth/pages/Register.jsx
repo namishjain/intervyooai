@@ -3,11 +3,12 @@ import { useNavigate, Link } from 'react-router'
 import { useAuth } from '../hooks/useAuth'
 import "../auth.form.scss"
 import GoogleSignInButton from '../components/GoogleSignInButton'
+import { getErrorMessage } from '../../../lib/error-message'
 
 const Register = () => {
     const navigate = useNavigate()
     const [error, setError] = useState("")
-    const { loading, handleGoogleLogin } = useAuth()
+    const { loading, sessionError, handleGoogleLogin } = useAuth()
 
     const handleGoogleSuccess = async (credential) => {
         setError("")
@@ -15,7 +16,7 @@ const Register = () => {
             await handleGoogleLogin(credential)
             navigate("/")
         } catch (err) {
-            setError(err.response?.data?.message || "Unable to create your account with Google. Please try again.")
+            setError(getErrorMessage(err, "Unable to create your account with Google. Please try again."))
         }
     }
 
@@ -42,7 +43,7 @@ const Register = () => {
                 </div>
 
                 <div className="auth-form">
-                    {error && <p className="auth-error" role="alert">{error}</p>}
+                    {(error || sessionError) && <p className="auth-error" role="alert">{error || sessionError}</p>}
                     <GoogleSignInButton
                         onSuccess={handleGoogleSuccess}
                         onError={setError}

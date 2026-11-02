@@ -11,6 +11,13 @@ function getTokenCookieOptions(){
 }
 
 function issueSessionCookie(user, res){
+    if(!process.env.JWT_SECRET){
+        const error = new Error("JWT_SECRET is not configured")
+        error.statusCode = 503
+        error.userMessage = "Sign-in is temporarily unavailable. Please try again later."
+        throw error
+    }
+
     const token = jwt.sign(
         {id:user._id, username: user.username},
         process.env.JWT_SECRET,
@@ -90,6 +97,12 @@ function createUsernameBase(name, email){
 }
 
 async function googleLoginController(req,res){
+    if(!process.env.JWT_SECRET){
+        return res.status(503).json({
+            message:"Sign-in is temporarily unavailable. Please try again later."
+        })
+    }
+
     if(!process.env.GOOGLE_CLIENT_ID){
         return res.status(503).json({message:"Google sign-in is not configured on the server."})
     }
@@ -185,6 +198,11 @@ async function logoutUserController(req,res){
  */
 async function getMeController(req,res){
     const user = await userModel.findById(req.user.id)
+    if(!user){
+        return res.status(401).json({
+            message: "Your account could not be found. Please sign in again."
+        })
+    }
 
     res.status(200).json({
         message: "User details fetched successfully",

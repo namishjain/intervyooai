@@ -4,12 +4,19 @@ import {googleLogin,logout} from "../services/auth.api"
 
 export const useAuth = ()=>{
     const context = useContext(AuthContext)
-    const {user, setUser, loading, setLoading} = context
+    if (!context) {
+        throw new Error("useAuth must be used within an AuthProvider")
+    }
+    const {user, setUser, loading, setLoading, sessionError, setSessionError} = context
 
     const handleGoogleLogin = async (credential) => {
         setLoading(true)
+        setSessionError("")
         try{
             const data = await googleLogin(credential)
+            if (!data?.user) {
+                throw new Error("The server returned invalid account information.")
+            }
             setUser(data.user)
             return data
         } finally{
@@ -21,5 +28,5 @@ export const useAuth = ()=>{
         setUser(null)
     }
 
-    return {user,loading,handleGoogleLogin,handleLogout}
+    return {user,loading,sessionError,handleGoogleLogin,handleLogout}
 }

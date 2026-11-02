@@ -73,9 +73,27 @@ const geminiReportSchema = {
 }
 
 
-const ai = new GoogleGenAI({
-    apiKey: process.env.GOOGLE_GENAI_API_KEY
-})
+function getAiClient(){
+    if(!process.env.GOOGLE_GENAI_API_KEY){
+        const error = new Error("GOOGLE_GENAI_API_KEY is not configured")
+        error.statusCode = 503
+        error.userMessage = "Interview report generation is not configured on the server."
+        throw error
+    }
+
+    return new GoogleGenAI({apiKey: process.env.GOOGLE_GENAI_API_KEY})
+}
+
+function createAiServiceError(cause, message){
+    if(cause.userMessage){
+        return cause
+    }
+
+    const error = new Error(message, {cause})
+    error.statusCode = 502
+    error.userMessage = message
+    return error
+}
 
 const interviewReportSchema = z.object({
     matchScore: z.number().describe("A score between 0 and 100 indicating how well the candidate's profile matches the job description"),
@@ -128,32 +146,34 @@ async function generateInterviewReport({resume, selfDescription, jobDescription}
         - The job title as title. If the description does not state a title explicitly, infer a concise title from the role.
         `
 
-    const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash-lite",
-        contents: prompt,
-        config:{
-            responseMimeType: "application/json",
-            responseSchema: geminiReportSchema
-        }
-    })
-    console.log(response.text)
-    return interviewReportSchema.parse(JSON.parse(response.text))
+    try{
+        const response = await getAiClient().models.generateContent({
+            model: "gemini-3.5-flash-lite",
+            contents: prompt,
+            config:{
+                responseMimeType: "application/json",
+                responseSchema: geminiReportSchema
+            }
+        })
+        return interviewReportSchema.parse(JSON.parse(response.text))
+    } catch(error){
+        throw createAiServiceError(error, "We could not generate your interview report right now. Please try again.")
+    }
 }
 
 async function generatePdfFromHtml(htmlContent){
     const browser = await puppeteer.launch({
-        executablePath: "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
         headless: true
     });
-    
-    const page = await browser.newPage()
-    await page.setContent(htmlContent, {waitUntil:"networkidle0"})
 
-    const pdfBuffer = await page.pdf({format: "A4"})
-    
-    await browser.close()
+    try{
+        const page = await browser.newPage()
+        await page.setContent(htmlContent, {waitUntil:"networkidle0"})
 
-    return pdfBuffer
+        return await page.pdf({format: "A4"})
+    } finally{
+        await browser.close()
+    }
 }
 
 async function generateResumePdf({resume, selfDescription, jobDescription}) {
@@ -169,19 +189,21 @@ async function generateResumePdf({resume, selfDescription, jobDescription}) {
 
         the response should be a JSON object with a single field "html" which contains the HTML content of the resume which can be converted to pdf using ay library like puppeteer
     `
-    const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config:{
-            responseMimeType: "application/json",
-            responseSchema: zodToJsonSchema(resumepdfSchema),
-        }
-    })
-    
-    const jsonContent = JSON.parse(response.text)
+    try{
+        const response = await getAiClient().models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: prompt,
+            config:{
+                responseMimeType: "application/json",
+                responseSchema: zodToJsonSchema(resumepdfSchema),
+            }
+        })
 
-    const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
-    return pdfBuffer
+        const jsonContent = resumepdfSchema.parse(JSON.parse(response.text))
+        return await generatePdfFromHtml(jsonContent.html)
+    } catch(error){
+        throw createAiServiceError(error, "We could not create your resume PDF right now. Please try again.")
+    }
 }
 
 module.exports = {generateInterviewReport, generateResumePdf}

@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router'
 import "../auth.form.scss"
 import { useAuth } from '../hooks/useAuth'
 import GoogleSignInButton from '../components/GoogleSignInButton'
+import { getErrorMessage } from '../../../lib/error-message'
 
 const Login = () => {
-    const { loading, handleGoogleLogin } = useAuth()
+    const { loading, sessionError, handleGoogleLogin } = useAuth()
     const navigate = useNavigate()
     const [error, setError] = useState("")
 
@@ -15,7 +16,7 @@ const Login = () => {
             await handleGoogleLogin(credential)
             navigate("/")
         } catch (err) {
-            setError(err.response?.data?.message || "Unable to sign in with Google. Please try again.")
+            setError(getErrorMessage(err, "Unable to sign in with Google. Please try again."))
         }
     }
 
@@ -42,7 +43,7 @@ const Login = () => {
                 </div>
 
                 <div className="auth-form">
-                    {error && <p className="auth-error" role="alert">{error}</p>}
+                    {(error || sessionError) && <p className="auth-error" role="alert">{error || sessionError}</p>}
                     <GoogleSignInButton
                         onSuccess={handleGoogleSuccess}
                         onError={setError}

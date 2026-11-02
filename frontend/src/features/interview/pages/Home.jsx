@@ -4,6 +4,7 @@ import { useInterview } from '../hooks/useInterview'
 import {useState, useRef} from 'react'
 import { useNavigate } from 'react-router'
 import { useAuth } from '../../auth/hooks/useAuth'
+import { getErrorMessage } from '../../../lib/error-message'
 
 const Home = () => {
 
@@ -31,7 +32,7 @@ const Home = () => {
       const data = await generateReport({jobDescription, selfDescription, resumeFile})
       navigate(`/interview/${data._id}`)
     } catch (err) {
-      setError(err.response?.data?.message || "Unable to generate your report. Please try again.")
+      setError(getErrorMessage(err, "Unable to generate your report. Please try again."))
     }
   }
 
@@ -42,7 +43,7 @@ const Home = () => {
       await handleLogout()
       navigate("/login", {replace: true})
     } catch (err) {
-      setLogoutError(err.response?.data?.message || "Unable to sign out. Please try again.")
+      setLogoutError(getErrorMessage(err, "Unable to sign out. Please try again."))
     } finally {
       setIsLoggingOut(false)
     }
@@ -161,7 +162,7 @@ const Home = () => {
                 placeholder="Share your strengths, experience, and what makes you a great fit..."
                 required
               />
-              {error && <p role="alert">{error}</p>}
+              {error && <p className="form-error" role="alert">{error}</p>}
               <button
                 type="button"
                 className="button primary-button"

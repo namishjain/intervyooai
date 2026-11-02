@@ -24,7 +24,7 @@ const Interview = () => {
 
     return (
       <main className="interview-page">
-        <p role="alert">{message}</p>
+        <p className="interview-error" role="alert">{message}</p>
         <Link to="/">Back to workspace</Link>
       </main>
     )
@@ -34,7 +34,7 @@ const Interview = () => {
     if (reportError) {
       return (
         <main className="interview-page">
-          <p role="alert">{reportError}</p>
+          <p className="interview-error" role="alert">{reportError}</p>
           <Link to="/">Back to workspace</Link>
         </main>
       )

@@ -6,6 +6,8 @@ Copy `.env.example` to `.env` and set `VITE_GOOGLE_CLIENT_ID` to your Google
 OAuth 2.0 Web application client ID. In Google Cloud Console, configure the
 frontend origin (for local development, `http://localhost:5173`) as an
 authorized JavaScript origin. Restart Vite after changing environment values.
+Set `VITE_API_BASE_URL` to the backend origin when it is not running at
+`http://localhost:3000`.
 
 Set the same client ID as `GOOGLE_CLIENT_ID` in the backend environment. The
 backend verifies each Google ID token and requires its audience to match this
